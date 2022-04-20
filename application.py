@@ -127,3 +127,7 @@ def AI():
 
     result_dict = {'output': result}
     return result_dict
+
+@app.route("/AII", methods=['GET'])
+def AII():
+    return "Hello"
