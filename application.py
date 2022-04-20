@@ -127,11 +127,3 @@ def AI():
 
     result_dict = {'output': result}
     return result_dict
-
-
-def run_server_api():
-    app.run(host='0.0.0.0', port=8080)
-
-
-if __name__ == "__main__":
-    run_server_api()
