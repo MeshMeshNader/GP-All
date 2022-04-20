@@ -113,11 +113,11 @@ def AI():
 
     choice = request.json['operation']
 
-    if choice == 3:
+    if choice == 1:
         result = ImageCaptioning(img)
     elif choice == 2:
         result =ObjectDetection(img)
-    elif choice == 1:
+    elif choice == 3:
         result = FaceDetection(img)
     else:
         result = "No chosen operation"
