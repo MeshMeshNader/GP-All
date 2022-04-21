@@ -107,7 +107,7 @@ def AI():
     im_b64 = request.json['image']
 
     # convert it into bytes
-    img_bytes = base64.b64decode(im_b64.encode('utf-8'))
+    img_bytes = base64.b64decode(im_b64)
 
     img = io.BytesIO(img_bytes)
 
