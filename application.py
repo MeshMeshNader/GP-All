@@ -130,6 +130,9 @@ def AI():
 
 @app.route("/test", methods=['POST'])
 def test():
+    if not request.json or 'number' not in request.json:
+        abort(400)
+    
     num = request.json['number']
-    result_dict = {"number": num+" base" , "num2" : num+" adddeeed"}
+    result_dict = {"number": num+" base"}
     return result_dict
