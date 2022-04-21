@@ -132,7 +132,10 @@ def AI():
 def test():
     if not request.json or 'number' not in request.json:
         abort(400)
-    
+
     num = request.json['number']
-    result_dict = {"number": num+" base"}
+    num2 = request.json['number2']
+
+
+    result_dict = {"output": "Result is "+num+num2}
     return result_dict
