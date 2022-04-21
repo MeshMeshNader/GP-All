@@ -125,5 +125,11 @@ def AI():
     # access other keys of json
     # print(request.json['other_key'])
 
-    result_dict = {'output': result}
+    result_dict = {"output": result}
+    return result_dict
+
+@app.route("/test", methods=['POST'])
+def test():
+    num = request.json['number']
+    result_dict = {"number": num+" base" , "num2" : num+" adddeeed"}
     return result_dict
