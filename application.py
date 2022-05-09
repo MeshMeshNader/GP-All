@@ -1,16 +1,25 @@
 import io
 import json
 import re
+import cv2
+import re
+import os
+import six
 import base64
 import logging
 from azure.cognitiveservices.vision.face import FaceClient
 from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from azure.cognitiveservices.vision.customvision.prediction import CustomVisionPredictionClient
+from msrest.authentication import ApiKeyCredentials
 from flask import Flask, request, jsonify, abort
+from google.cloud import vision
+from gtts import gTTS
+from google.cloud import translate_v2 as translate
+
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
-
 
 API_KEY = "8de30d7a31a34d67bb83f652da0a3be2"
 ENDPOINT = "https://computervisiontest12.cognitiveservices.azure.com/"
@@ -19,6 +28,8 @@ cv_client = ComputerVisionClient(ENDPOINT, CognitiveServicesCredentials(API_KEY)
 API_KEY_FACE = 'b3248e9827f943fca4a9966fddbe836f'
 ENDPOINT_FACE = 'https://myfaceapi2.cognitiveservices.azure.com/'
 face_client = FaceClient(ENDPOINT_FACE, CognitiveServicesCredentials(API_KEY_FACE))
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'ServiceAccountToken.json'
 
 
 def ImageCaptioning(img):
@@ -34,6 +45,7 @@ def ImageCaptioning(img):
 
 def ObjectDetection(img):
     result = ""
+    counter = 0
     detect_object = cv_client.detect_objects_in_stream(img)
     if (len(detect_object.objects) == 0):
         print("No objects detected.")
@@ -44,14 +56,18 @@ def ObjectDetection(img):
         result = "I can recognize "
         for object in detect_object.objects:
             print("'{}' with confidence {:.2f}%".format(object.object_property, object.confidence * 100))
-            result += "'{}' and ".format(object.object_property)
+            if (counter != len(detect_object.objects)):
+                result += "'{}' and ".format(object.object_property)
+            else:
+                result += "'{}' ".format(object.object_property)
+            counter += 1
         result = re.sub(r'[\']', "", result)
         return result
 
 
-def FaceDetection(image_file):
+def FaceDetection(img):
     response_detected_faces = face_client.face.detect_with_stream(
-        image_file,
+        img,
         detection_model='detection_01',
         recognition_model='recognition_04',
         return_face_attributes=['emotion', 'gender', 'age'],
@@ -65,7 +81,7 @@ def FaceDetection(image_file):
 
     print('Number of people detected: {0}'.format(len(response_detected_faces)))
 
-    counter = 1
+    counter = 0
     result = ""
     for face in response_detected_faces:
         gender = face.face_attributes.gender
@@ -93,9 +109,72 @@ def FaceDetection(image_file):
 
         final_emotion = max(list, key=list.get)
         print("Emotion of this person is " + final_emotion)
-        counter = +1
-        result += "\nPerson " + str(counter) + " Gender: " + gender + " Age: " + str(int(age)) + " Emotion of this person is " + final_emotion
+        counter += 1
+        result += "\nPerson " + str(counter) + " Gender: " + gender + " Age: " + str(
+            int(age)) + " Emotion of this person is " + final_emotion
     return result
+
+
+def detect_document(img):
+    client = vision.ImageAnnotatorClient()
+    image = vision.Image(content=img)
+    response = client.document_text_detection(image=image)
+    result = response.full_text_annotation.text
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+    return result
+
+
+def translate_text(text, target):
+    translate_client = translate.Client()
+
+    if isinstance(text, six.binary_type):
+        text = text.decode("utf-8")
+
+    result = translate_client.translate(text, target_language=target)
+
+    print(result)
+
+    print(u"Text: {}".format(result["input"]))
+    print(u"Translation: {}".format(result["translatedText"]))
+    print(u"Detected source language: {}".format(result["detectedSourceLanguage"]))
+
+    return result["translatedText"]
+
+
+def Currency_Recognition(img):
+    Prediction_Key = "a875eed7217c4bae8d68ac7dc8d5e1ef"
+    endpoint = "https://southcentralus.api.cognitive.microsoft.com/"
+    project_id = "a2856ab9-3ca2-481d-95f9-60106f6000e9"
+    iteration_name = "Iteration4"
+    Credentials = ApiKeyCredentials(in_headers={"Prediction-Key": Prediction_Key})
+    predictor = CustomVisionPredictionClient(endpoint, Credentials)
+
+    currnecy_dic = {}
+
+    with read_and_resize(img) as image_file:
+        results = predictor.classify_image_with_no_store(project_id, iteration_name, image_file.read()
+                                                         )
+
+        for prediction in results.predictions:
+            currnecy_dic[prediction.tag_name] = round(prediction.probability, 2)
+
+    # print("\t" + prediction.tag_name +": {0:.2f}%".format(prediction.probability * 100))
+    predicted_currency = max(currnecy_dic, key=currnecy_dic.get)
+
+    return predicted_currency
+
+
+def read_and_resize(img):
+  im_resize = cv2.resize(img, (1000, 1000))
+  br = io.BufferedReader(im_resize)
+  return br
+
+
+
 
 @app.route("/AI", methods=['POST'])
 def AI():
@@ -107,7 +186,7 @@ def AI():
     im_b64 = request.json['image']
 
     # convert it into bytes
-    img_bytes = base64.b64decode(im_b64)
+    img_bytes = base64.b64decode(im_b64.encode('utf-8'))
 
     img = io.BytesIO(img_bytes)
 
@@ -116,9 +195,13 @@ def AI():
     if choice == "1":
         result = ImageCaptioning(img)
     elif choice == "2":
-        result =ObjectDetection(img)
+        result = ObjectDetection(img)
     elif choice == "3":
         result = FaceDetection(img)
+    elif choice == "4":
+        result = detect_document(img)
+    elif choice == "5":
+        result = CustomVisionPredictionClient(img)
     else:
         result = "No chosen operation"
 
@@ -126,16 +209,4 @@ def AI():
     # print(request.json['other_key'])
 
     result_dict = {"output": result}
-    return result_dict
-
-@app.route("/test", methods=['POST'])
-def test():
-    if not request.json or 'number' not in request.json:
-        abort(400)
-
-    num = request.json['number']
-    num2 = request.json['number2']
-
-
-    result_dict = {"output": "Result is "+num+num2}
     return result_dict

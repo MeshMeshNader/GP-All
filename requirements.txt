@@ -26,6 +26,7 @@ gTTS==2.2.3
 google-api-core==1.31.5
 google-auth==1.35.0
 google-cloud-core==1.7.2
+google-cloud-vision==2.7.2
 google-cloud-translate==2.0.1
 googleapis-common-protos==1.56.0
 grpcio==1.44.0
