@@ -1,7 +1,4 @@
 import io
-import json
-import re
-import cv2
 import re
 import os
 import six
@@ -12,11 +9,9 @@ from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.customvision.prediction import CustomVisionPredictionClient
 from msrest.authentication import ApiKeyCredentials
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, abort
 from google.cloud import vision
-from gtts import gTTS
 from google.cloud import translate_v2 as translate
-
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -56,7 +51,7 @@ def ObjectDetection(img):
         result = "I can recognize "
         for object in detect_object.objects:
             print("'{}' with confidence {:.2f}%".format(object.object_property, object.confidence * 100))
-            if (counter != len(detect_object.objects)):
+            if (counter != len(detect_object.objects) - 1):
                 result += "'{}' and ".format(object.object_property)
             else:
                 result += "'{}' ".format(object.object_property)
@@ -115,6 +110,30 @@ def FaceDetection(img):
     return result
 
 
+def detect_labels(img):
+    counter = 0
+    result = "I can recognize "
+    client = vision.ImageAnnotatorClient()
+
+    image = vision.Image(content=img)
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+
+    if (len(labels) == 0):
+        print("No objects detected.")
+        result = "I cannot recognize any label "
+        return result
+    else:
+        for label in labels:
+            if (counter != len(labels) - 1):
+                result += label.description + " and "
+            else:
+                result += label.description
+            counter += 1
+        return result
+
+
 def detect_document(img):
     client = vision.ImageAnnotatorClient()
     image = vision.Image(content=img)
@@ -155,25 +174,17 @@ def Currency_Recognition(img):
 
     currnecy_dic = {}
 
-    with read_and_resize(img) as image_file:
+    with io.BufferedReader(img) as image_file:
         results = predictor.classify_image_with_no_store(project_id, iteration_name, image_file.read()
                                                          )
 
         for prediction in results.predictions:
             currnecy_dic[prediction.tag_name] = round(prediction.probability, 2)
+            # print("\t" + prediction.tag_name +": {0:.2f}%".format(prediction.probability * 100))
 
-    # print("\t" + prediction.tag_name +": {0:.2f}%".format(prediction.probability * 100))
     predicted_currency = max(currnecy_dic, key=currnecy_dic.get)
 
     return predicted_currency
-
-
-def read_and_resize(img):
-  im_resize = cv2.resize(img, (1000, 1000))
-  br = io.BufferedReader(im_resize)
-  return br
-
-
 
 
 @app.route("/AI", methods=['POST'])
@@ -199,9 +210,11 @@ def AI():
     elif choice == "3":
         result = FaceDetection(img)
     elif choice == "4":
-        result = detect_document(img)
+        result = detect_document(img_bytes)
     elif choice == "5":
-        result = CustomVisionPredictionClient(img)
+        result = Currency_Recognition(img)
+    elif choice == "6":
+        result = detect_labels(img_bytes)
     else:
         result = "No chosen operation"
 
@@ -210,3 +223,6 @@ def AI():
 
     result_dict = {"output": result}
     return result_dict
+
+
+# app.run(debug=True)
