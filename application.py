@@ -52,9 +52,9 @@ def ObjectDetection(img):
         for object in detect_object.objects:
             print("'{}' with confidence {:.2f}%".format(object.object_property, object.confidence * 100))
             if (counter != len(detect_object.objects) - 1):
-                result += "'{}' and ".format(object.object_property)
+                result += "'{}', ".format(object.object_property)
             else:
-                result += "'{}' ".format(object.object_property)
+                result += " and '{}' ".format(object.object_property)
             counter += 1
         result = re.sub(r'[\']', "", result)
         return result
@@ -127,9 +127,9 @@ def detect_labels(img):
     else:
         for label in labels:
             if (counter != len(labels) - 1):
-                result += label.description + " and "
+                result += label.description + ", "
             else:
-                result += label.description
+                result += " and " + label.description
             counter += 1
         return result
 
@@ -224,5 +224,17 @@ def AI():
     result_dict = {"output": result}
     return result_dict
 
+@app.route("/TR", methods=['POST'])
+def TR():
+    if not request.json or 'text' not in request.json:
+        abort(400)
 
-# app.run(debug=True)
+    text = request.json['text']
+
+    result = translate_text(text, 'ar')
+
+    result_dict = {"output": result}
+    return result_dict
+
+
+app.run(debug=True)
