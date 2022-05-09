@@ -224,6 +224,7 @@ def AI():
     result_dict = {"output": result}
     return result_dict
 
+
 @app.route("/TR", methods=['POST'])
 def TR():
     if not request.json or 'text' not in request.json:
@@ -237,4 +238,4 @@ def TR():
     return result_dict
 
 
-app.run(debug=True)
+# app.run(debug=True)
