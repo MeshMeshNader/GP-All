@@ -16,8 +16,8 @@ from google.cloud import translate_v2 as translate
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
-API_KEY = "8de30d7a31a34d67bb83f652da0a3be2"
-ENDPOINT = "https://computervisiontest12.cognitiveservices.azure.com/"
+API_KEY = "070faf614b8844f1beabc0f55ae854ec"
+ENDPOINT = "https://mohamedhesham.cognitiveservices.azure.com/"
 cv_client = ComputerVisionClient(ENDPOINT, CognitiveServicesCredentials(API_KEY))
 
 API_KEY_FACE = 'b3248e9827f943fca4a9966fddbe836f'
@@ -115,7 +115,7 @@ def FaceDetection(img):
             counter += 1
             result += "\nPerson " + str(counter) + " Gender: " + gender + " Age: " + str(
                 int(age)) + " Emotion of this person is " + final_emotion + "\n"
-            return result
+        return result
     except:
         return "There was an Error while Detecting"
 
