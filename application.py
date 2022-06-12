@@ -31,7 +31,7 @@ face_client = FaceClient(ENDPOINT_FACE, CognitiveServicesCredentials(API_KEY_FAC
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'ServiceAccountToken.json'
 
 TOLERANCE = 0.59
-MODEL = 'cnn'  # 'hog' or 'cnn' - CUDA accelerated (if available) deep-learning pretrained model
+MODEL = 'hog'  # 'hog' or 'cnn' - CUDA accelerated (if available) deep-learning pretrained model
 
 
 def ImageCaptioning(img):
@@ -336,5 +336,6 @@ def Recognize_Face():
 
     result_dict = {"output": result}
     return result_dict
+
 
 # app.run(debug=True)
