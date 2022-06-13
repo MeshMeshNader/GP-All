@@ -306,15 +306,17 @@ def Recognize_Face():
     if not request.json or 'image' not in request.json:
         abort(400)
 
+    if request.json['encodings'] != "":
+        all_face_encodings = json.loads(request.json['encodings'])
+    else:
+        result_dict = {"output": "I Found Unknown Person"}
+        return result_dict
+
     im_b64 = request.json['image']
 
     img_bytes = base64.b64decode(im_b64.encode('utf-8'))
 
     img = io.BytesIO(img_bytes)
-
-
-    all_face_encodings = json.loads(request.json['encodings'])
-
 
     known_names = list(all_face_encodings.keys())
     known_faces = np.array(list(all_face_encodings.values()))
