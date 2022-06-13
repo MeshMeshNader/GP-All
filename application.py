@@ -278,7 +278,7 @@ def Training_Faces():
     known_faces = []
 
     for key, value in all_urls.items():
-        response = urllib.request.urlopen(value)
+        response = urllib.request.urlopen(value.replace('\\', ''))
         image = face_recognition.load_image_file(response)
 
         encoding = face_recognition.face_encodings(image)[0]
