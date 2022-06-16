@@ -31,7 +31,7 @@ face_client = FaceClient(ENDPOINT_FACE, CognitiveServicesCredentials(API_KEY_FAC
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'ServiceAccountToken.json'
 
 TOLERANCE = 0.59
-MODEL = 'hog'  # 'hog' or 'cnn' - CUDA accelerated (if available) deep-learning pretrained model
+MODEL = 'hog'
 
 
 def ImageCaptioning(img):
@@ -334,12 +334,12 @@ def Recognize_Face():
 
         if True in results:
             match = known_names[results.index(True)]
-            result = "I Found " + match
+            result = "" + match
 
         check = all(element == False for element in results)
 
         if check:
-            result = "I Found Unknown Person"
+            result = "Unknown Person"
 
     result_dict = {"output": result}
     return result_dict
