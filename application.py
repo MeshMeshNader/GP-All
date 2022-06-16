@@ -309,7 +309,7 @@ def Recognize_Face():
     if request.json['encodings'] != "":
         all_face_encodings = json.loads(request.json['encodings'])
     else:
-        result_dict = {"output": "I Found Unknown Person"}
+        result_dict = {"output": "Unknown Person"}
         return result_dict
 
     im_b64 = request.json['image']
