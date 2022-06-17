@@ -345,4 +345,4 @@ def Recognize_Face():
     return result_dict
 
 
-# app.run(debug=True)
+app.run(debug=True)
