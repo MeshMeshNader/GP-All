@@ -194,8 +194,8 @@ def Currency_Recognition(img):
     try:
         Prediction_Key = "a875eed7217c4bae8d68ac7dc8d5e1ef"
         endpoint = "https://southcentralus.api.cognitive.microsoft.com/"
-        project_id = "a2856ab9-3ca2-481d-95f9-60106f6000e9"
-        iteration_name = "Iteration4"
+        project_id = "8dd61d81-acfd-4e1f-a2e0-43371d952931"
+        iteration_name = "Iteration2"
         Credentials = ApiKeyCredentials(in_headers={"Prediction-Key": Prediction_Key})
         predictor = CustomVisionPredictionClient(endpoint, Credentials)
 
