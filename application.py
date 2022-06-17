@@ -120,8 +120,8 @@ def FaceDetection(img):
             final_emotion = max(list, key=list.get)
             print("Emotion of this person is " + final_emotion)
             counter += 1
-            result += "\nPerson " + str(counter) + " Gender: " + gender + " Age: " + str(
-                int(age)) + " Emotion of this person is " + final_emotion + "\n"
+            result += "Person " + str(counter) + "\n" +  "Gender: " + gender + "\n" + "Age: " + str(
+                int(age)) + "\n" + "Emotion of this person is " + final_emotion + "\n"
         return result
     except:
         return "There was an Error while Detecting"
@@ -165,7 +165,10 @@ def detect_document(img):
                 '{}\nFor more info on error messages, check: '
                 'https://cloud.google.com/apis/design/errors'.format(
                     response.error.message))
-        return result
+        if(result == ''):
+            return "There is no text in this Image"
+        else:
+            return result
     except:
         return "There was an Error while Scanning"
 
@@ -211,7 +214,10 @@ def Currency_Recognition(img):
 
         predicted_currency = max(currnecy_dic, key=currnecy_dic.get)
 
-        return predicted_currency
+        if(predicted_currency == "Not Currency"):
+            return "There is no currency in this Image"
+        else:
+            return "I can recognize " + predicted_currency
     except:
         return "There was an Error while Detecting"
 
